@@ -334,6 +334,45 @@ def audio_rms_stream(path, out_list, stop_event):
             stop_event.set(); sd.stop(); pygame.quit(); return
 
 
+def maybe_start_rec(record_path: str):
+    """Start ffmpeg to record the screen+system audio to `record_path` if ffmpeg is available.
+
+    This is optional: if ffmpeg is not on PATH, we simply return None.
+    The caller is responsible for terminating the returned Popen when done.
+    """
+    import shutil
+    import subprocess
+
+    if not record_path:
+        return None
+    ffmpeg = shutil.which('ffmpeg')
+    if not ffmpeg:
+        print('ffmpeg not found in PATH; recording disabled')
+        return None
+
+    # Example ffmpeg command for macOS using avfoundation (audio/video may differ by platform)
+    # We'll record the main display and default audio input. Users may need to adapt this per OS.
+    cmd = [
+        ffmpeg,
+        '-y',
+        '-f', 'avfoundation',
+        '-video_size', '1280x720',
+        '-framerate', '30',
+        '-i', '1:0',
+        '-c:v', 'libx264',
+        '-preset', 'veryfast',
+        '-crf', '23',
+        str(record_path)
+    ]
+    try:
+        p = subprocess.Popen(cmd)
+        print(f'Started ffmpeg recording to {record_path} (pid={p.pid})')
+        return p
+    except Exception as e:
+        print('Failed to start ffmpeg:', e)
+        return None
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--duration', type=float, default=None)
