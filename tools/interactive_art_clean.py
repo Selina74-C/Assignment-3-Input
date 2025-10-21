@@ -108,6 +108,11 @@ def audio_rms_stream(path, out_list, stop_event):
         pygame.init()
         W, H = 1100, 640
         screen = pygame.display.set_mode((W, H))
+        print("[DEBUG] Pygame window created.")
+        import time as _dbg_time
+        print("[DEBUG] Sleeping for 10 seconds after window creation...")
+        _dbg_time.sleep(10)
+        print("[DEBUG] Awake. Entering main event loop.")
         pygame.display.set_caption('Interactive Art')
         clock = pygame.time.Clock()
         font = pygame.font.SysFont(None, 32)
@@ -151,7 +156,12 @@ def audio_rms_stream(path, out_list, stop_event):
 
         rms_deque = deque(maxlen=8)
 
+        print("[DEBUG] Entering main event loop.")
+        loop_count = 0
         while True:
+            loop_count += 1
+            if loop_count % 60 == 0:
+                print(f"[DEBUG] Main loop iteration: {loop_count}")
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     stop_event.set(); sd.stop(); pygame.quit(); return
